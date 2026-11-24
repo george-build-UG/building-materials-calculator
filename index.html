@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building Materials Trade Calculator — CBM, 20GP/40HQ Container & Tile Wastage</title>
+  <meta name="description" content="Free open-source building materials export calculator for international buyers. Estimate mixed container loading (CBM + payload weight for 20GP/40GP/40HQ), sea freight ratio, and tile/stone wastage & full-carton budget." />
+  <meta property="og:title" content="Building Materials Trade Calculator — CBM / 20GP / 40HQ & Tile Wastage" />
+  <meta property="og:description" content="Calculate mixed sea container volume, payload limits, ocean freight-to-goods ratio, and porcelain tile or stone slab wastage in metric or imperial units." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Building Materials Trade Calculator",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": "Open-source building materials container load (CBM & weight for 20GP/40GP/40HQ) and tile/stone wastage calculator for overseas sourcing.",
+    "author": {
+      "@type": "Organization",
+      "name": "George Build",
+      "url": "https://george-build.com/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">BMC</div>
+        <div>
+          <h1 class="brand-title" data-i18n="appTitle">Building Materials Trade Calculator</h1>
+          <p class="brand-subtitle" data-i18n="appSubtitle">Container Load (CBM / Weight / 20GP / 40HQ) & Tile/Stone Wastage Estimator</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn btn-header" id="btnLoadSample" data-i18n="btnSample">Load Sample Villa</button>
+        <button type="button" class="btn btn-header" id="btnResetAll" data-i18n="btnReset">Reset</button>
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" class="lang-btn active" data-lang="en">EN</button>
+          <button type="button" class="lang-btn" data-lang="zh">中文</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrap">
+    <div class="print-only-header">
+      <h1 id="printTitle">Building Materials Trade Calculator</h1>
+      <p id="printMeta"></p>
+    </div>
+
+    <div class="tabs-bar">
+      <div class="tabs-group" role="tablist">
+        <button type="button" class="tab-btn active" role="tab" aria-selected="true" id="tabBtnContainer" data-tab="container">
+          <span data-i18n="tabContainer">Container & Freight (CBM)</span>
+          <span class="tab-count tabular" id="cargoCountBadge">0</span>
+        </button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" id="tabBtnTile" data-tab="tile">
+          <span data-i18n="tabTile">Tile & Stone Wastage</span>
+        </button>
+      </div>
+
+      <div class="toolbar-right">
+        <button type="button" class="btn btn-outline btn-sm" id="btnCopySummary" data-i18n="btnCopy">Copy Summary</button>
+        <button type="button" class="btn btn-outline btn-sm" id="btnPrint" data-i18n="btnPrint">Print / PDF</button>
+      </div>
+    </div>
+
+    <!-- MODULE 1: CONTAINER LOAD & FREIGHT RATIO -->
+    <section id="panelContainer" role="tabpanel" aria-labelledby="tabBtnContainer">
+      <div class="workspace-grid">
+        <!-- Left column: Inputs -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-header">
+              <h2 data-i18n="cargoListTitle">Cargo Manifest</h2>
+              <span class="badge" data-i18n="cargoListBadge">Dual Volume + Weight</span>
+            </div>
+            <div class="card-body">
+              <div class="quick-add-row">
+                <select id="presetMaterialSelect" class="select" aria-label="Add preset material"></select>
+                <button type="button" class="btn btn-primary" id="btnAddCargoItem" data-i18n="btnAddItem">+ Add Material</button>
+              </div>
+              <div id="cargoListContainer" class="cargo-list"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 data-i18n="freightSettingsTitle">Destination & Freight Settings</h2>
+              <span class="badge" data-i18n="freightSettingsBadge">Indicative / Editable</span>
+            </div>
+            <div class="card-body">
+              <div class="form-grid" style="margin-bottom: 12px;">
+                <div class="field">
+                  <label for="weightProfileSelect" data-i18n="labelWeightProfile">Destination Weight Limit</label>
+                  <select id="weightProfileSelect" class="select"></select>
+                </div>
+                <div class="field">
+                  <label for="routePresetSelect" data-i18n="labelRoutePreset">Reference Shipping Route</label>
+                  <select id="routePresetSelect" class="select"></select>
+                </div>
+              </div>
+
+              <div class="form-grid-5">
+                <div class="field">
+                  <label for="rateLclInput" data-i18n="labelLclRate">LCL (USD/CBM)</label>
+                  <input type="number" id="rateLclInput" class="input input-compact tabular" min="0" step="5" />
+                </div>
+                <div class="field">
+                  <label for="rate20GPInput" data-i18n="labelRate20GP">20GP (USD)</label>
+                  <input type="number" id="rate20GPInput" class="input input-compact tabular" min="0" step="50" />
+                </div>
+                <div class="field">
+                  <label for="rate40GPInput" data-i18n="labelRate40GP">40GP (USD)</label>
+                  <input type="number" id="rate40GPInput" class="input input-compact tabular" min="0" step="50" />
+                </div>
+                <div class="field">
+                  <label for="rate40HQInput" data-i18n="labelRate40HQ">40HQ (USD)</label>
+                  <input type="number" id="rate40HQInput" class="input input-compact tabular" min="0" step="50" />
+                </div>
+                <div class="field">
+                  <label for="rateLocalFeesInput" data-i18n="labelLocalFees">Fixed Fees (USD)</label>
+                  <input type="number" id="rateLocalFeesInput" class="input input-compact tabular" min="0" step="25" />
+                </div>
+              </div>
+
+              <div class="disclaimer-box" data-i18n="freightDisclaimer">
+                Preset rates are indicative China-port estimates for budgeting only — edit with your forwarder quote.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column: Results -->
+        <div class="sticky-col">
+          <div class="card">
+            <div class="card-header">
+              <h2 data-i18n="resultContainerTitle">Container Plan & Freight Ratio</h2>
+              <span id="constraintBadgeSlot"></span>
+            </div>
+            <div class="card-body" id="containerResultsBody"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE 2: TILE & STONE WASTAGE & BUDGET ESTIMATOR -->
+    <section id="panelTile" class="hidden" role="tabpanel" aria-labelledby="tabBtnTile">
+      <div class="workspace-grid">
+        <!-- Left column: Inputs -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-header">
+              <h2 data-i18n="tileInputTitle">Area & Material Specifications</h2>
+              <div class="seg-control no-print" role="group" aria-label="Unit system">
+                <button type="button" class="seg-btn active" id="unitMetricBtn" data-unit="metric" data-i18n="unitMetric">Metric (m² / mm)</button>
+                <button type="button" class="seg-btn" id="unitImperialBtn" data-unit="imperial" data-i18n="unitImperial">Imperial (sq ft / in)</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="field field-full">
+                  <label for="tileNetAreaInput">
+                    <span data-i18n="labelNetArea">Net Coverage Area</span>
+                    (<span id="tileAreaUnitLabel">m²</span>)
+                  </label>
+                  <input type="number" id="tileNetAreaInput" class="input tabular" min="0" step="1" />
+
+                  <div class="dim-helper no-print">
+                    <div class="hint-text" style="margin-bottom: 6px;" data-i18n="dimHelperToggle">Or calculate from L × W</div>
+                    <div class="dim-helper-row">
+                      <div class="field">
+                        <label for="roomLengthInput"><span data-i18n="labelRoomL">Length</span> (<span class="room-dim-unit">m</span>)</label>
+                        <input type="number" id="roomLengthInput" class="input input-compact tabular" min="0" step="0.1" placeholder="10" />
+                      </div>
+                      <div class="field">
+                        <label for="roomWidthInput"><span data-i18n="labelRoomW">Width</span> (<span class="room-dim-unit">m</span>)</label>
+                        <input type="number" id="roomWidthInput" class="input input-compact tabular" min="0" step="0.1" placeholder="8" />
+                      </div>
+                      <button type="button" class="btn btn-outline btn-sm" id="btnApplyRoomDim" data-i18n="btnApplyDim">Apply L × W</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field field-full">
+                  <label for="tilePresetSelect" data-i18n="labelTilePreset">Tile / Stone Format</label>
+                  <select id="tilePresetSelect" class="select"></select>
+                </div>
+
+                <div class="field">
+                  <label for="tileLengthInput">
+                    <span data-i18n="labelTileLength">Piece Length</span>
+                    (<span class="tile-dim-unit">mm</span>)
+                  </label>
+                  <input type="number" id="tileLengthInput" class="input tabular" min="1" step="1" />
+                </div>
+
+                <div class="field">
+                  <label for="tileWidthInput">
+                    <span data-i18n="labelTileWidth">Piece Width</span>
+                    (<span class="tile-dim-unit">mm</span>)
+                  </label>
+                  <input type="number" id="tileWidthInput" class="input tabular" min="1" step="1" />
+                </div>
+
+                <div class="field">
+                  <label for="tilePcsCartonInput" data-i18n="labelPcsPerCarton">Pieces / Carton (or 1 for Slab)</label>
+                  <input type="number" id="tilePcsCartonInput" class="input tabular" min="1" step="1" />
+                </div>
+
+                <div class="field">
+                  <label for="tileUnitPriceInput">
+                    <span data-i18n="labelTilePrice">Unit Price (USD)</span>
+                    / <span id="tilePriceUnitLabel">m²</span>
+                  </label>
+                  <input type="number" id="tileUnitPriceInput" class="input tabular" min="0" step="0.5" />
+                </div>
+
+                <div class="field">
+                  <label for="layingPatternSelect" data-i18n="labelLayingPattern">Laying Pattern</label>
+                  <select id="layingPatternSelect" class="select"></select>
+                </div>
+
+                <div class="field">
+                  <label for="tileWastageInput" data-i18n="labelWastagePct">Wastage Allowance (%)</label>
+                  <input type="number" id="tileWastageInput" class="input tabular" min="0" max="50" step="1" />
+                </div>
+
+                <div class="field field-full">
+                  <div class="pattern-desc" id="layingPatternDesc"></div>
+                </div>
+
+                <div class="field">
+                  <label for="tileKgPerM2Input" data-i18n="labelPackWeight">Est. Weight (kg / m²)</label>
+                  <input type="number" id="tileKgPerM2Input" class="input input-compact tabular" min="0" step="0.5" />
+                </div>
+
+                <div class="field">
+                  <label for="tileCbmPerM2Input" data-i18n="labelPackCbm">Est. Packed Volume (CBM / m²)</label>
+                  <input type="number" id="tileCbmPerM2Input" class="input input-compact tabular" min="0" step="0.0005" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column: Tile Results -->
+        <div class="sticky-col">
+          <div class="card">
+            <div class="card-header">
+              <h2 data-i18n="tileResultTitle">Purchase Quantity & Budget</h2>
+              <span class="badge" id="tileFormatBadge">600 × 600 mm</span>
+            </div>
+            <div class="card-body" id="tileResultsBody"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-top">
+        <span data-i18n="footerDesc">Open-source, zero-dependency estimation tool for international building materials sourcing.</span>
+        <div class="footer-links">
+          <span>
+            <span data-i18n="footerAttribution">Maintained by</span>
+            <a href="https://george-build.com/" target="_blank" rel="noopener noreferrer" data-i18n="footerBrand">George Build</a>
+          </span>
+          <span>·</span>
+          <span>MIT License</span>
+        </div>
+      </div>
+      <div data-i18n="footerDisclaimer">
+        All container capacities, packaging densities, and route freight figures are industry estimates. Always confirm exact packing lists and carrier quotes before booking.
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/presets.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
